@@ -26,13 +26,12 @@ class State:
 
     def mostWaitingTuple(self):
         waitingTimes = [trailer.waitingTime for trailer in self.trailers]
-        def findMax(array=waitingTimes):
-            max = array[0]
-            for i in range(len(array)):
-                if array[i] > max:
-                    max = array[i]
-            return max
-        maxIndex = waitingTimes.index(findMax())
+        maxVal = waitingTimes[0]
+        maxIndex = 0
+        for i in range(len(waitingTimes)):
+            if waitingTimes[i] > maxVal:
+                maxVal = waitingTimes[i]
+                maxIndex = i
         return self.makeTrailerTuple(maxIndex, self.randTrailerIndex())
 
     def randTrailerIndex(self):
