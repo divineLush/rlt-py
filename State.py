@@ -1,3 +1,4 @@
+from functools import reduce
 import Models as Models
 import random
 
@@ -8,6 +9,7 @@ class State:
         trailersNum = random.randint(10, 50)
         self.trailers = [Models.Trailer(random.randint(0, 24), i) for i in range(trailersNum)]
         self.warehouse = Models.Warehouse()
+        self.trailers.sort(key=lambda trailer: trailer.arrivalTime)
         self.assignTrailers()
 
     def assignTrailers(self):
@@ -22,9 +24,25 @@ class State:
         trailer.setWaitingTimeByLoc(loc)
         loc.assignedTrailers.append(trailer)
 
+    def mostWaitingTuple(self):
+        waitingTimes = [trailer.waitingTime for trailer in self.trailers]
+        def findMax(array=waitingTimes):
+            max = array[0]
+            for i in range(len(array)):
+                if array[i] > max:
+                    max = array[i]
+            return max
+        maxIndex = waitingTimes.index(findMax())
+        return self.makeTrailerTuple(maxIndex, self.randTrailerIndex())
+
+    def randTrailerIndex(self):
+        return random.randint(0, len(self.trailers)-1)
+
     def randSwap(self):
-        randIndex = lambda: random.randint(0, len(self.trailers) - 1)
-        self.swapTrailers(self.makeTrailerTuple(randIndex(), randIndex()))
+        self.swapTrailers(self.makeTrailerTuple(self.randTrailerIndex(), self.randTrailerIndex()))
+
+    def swapMostWaitingTrailer(self):
+        self.swapTrailers(self.mostWaitingTuple())
 
     def swapTrailers(self, randTrailers):
         '''
@@ -70,12 +88,6 @@ class State:
             if trailers[i].num == trailer.num:
                 res = i
                 break
-        return res
-
-    def totalOccupationTime(self):
-        res = 0
-        for loc in self.warehouse.locations:
-            res += loc.totalOccupationTime()
         return res
 
     def totalWaitingTime(self):

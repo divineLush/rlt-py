@@ -9,7 +9,8 @@ class Trailer:
         self.num = num
 
     def setWaitingTimeByLoc(self, loc):
-        self.waitingTime = loc.totalOccupationTime() - self.arrivalTime
+        diff = loc.totalOccupationTime() - self.arrivalTime
+        self.waitingTime = diff if diff >= 0 else 0
 
     def totalWeight(self):
         res = 0
@@ -24,6 +25,7 @@ class Trailer:
 class Palette:
     def __init__(self):
         self.weight = random.randint(100, 600)
+
 
 class Location:
     def __init__(self, num):
