@@ -1,10 +1,12 @@
 import Models as M
 import State as S
 
+# TODO: find most occupied trailer tuple
+
 state = S.State()
-print(state.totalWaitingTime())
-state.assignTrailers()
-print(state.totalWaitingTime())
-for i in range(100):
+prev = state.totalWaitingTime()
+print(prev)
+for i in range(1000):
     state.randSwap()
-print(state.totalWaitingTime())
+    print(state.totalWaitingTime())
+print(prev, state.totalWaitingTime())

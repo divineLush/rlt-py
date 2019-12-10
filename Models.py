@@ -4,9 +4,12 @@ class Trailer:
     def __init__(self, arrivalTime, num):
         self.palettes = [Palette() for i in range(random.randint(2, 15))]
         self.arrivalTime = arrivalTime
-        self.assignedGateNum = 0
+        self.assignedLocNum = 0
         self.waitingTime = 0
         self.num = num
+
+    def setWaitingTimeByLoc(self, loc):
+        self.waitingTime = loc.totalOccupationTime() - self.arrivalTime
 
     def totalWeight(self):
         res = 0
@@ -22,28 +25,34 @@ class Palette:
     def __init__(self):
         self.weight = random.randint(100, 600)
 
-
-class Gate:
-    def __init__(self, assignedTrailerNum):
-        self.assignedTrailerNum = assignedTrailerNum
-        self.totalOccupationTime = 0
-
-
 class Location:
-    def __init__(self, gate, num):
+    def __init__(self, num):
         self.capacity = random.randint(5000, 10000)
-        self.storedWeight = 0
-        self.gate = gate
+        self.assignedTrailers = []
         self.num = num
+
+    def totalOccupationTime(self):
+        res = 0
+        for trailer in self.assignedTrailers:
+            res += trailer.serviceTime()
+        return res
+
+    def getTrailerIndexByItsNum(self, num):
+        res = -1
+        for i in range(len(self.assignedTrailers)):
+            if self.assignedTrailers[i].num == num:
+                res = i
+                break
+        return res
 
 
 class Warehouse:
     def __init__(self):
-        self.locations = [Location(Gate(0), i) for i in range(6)]
+        self.locations = [Location(i) for i in range(6)]
 
     def leastOccupiedLoc(self):
         minLoc = self.locations[0]
         for l in self.locations:
-            if l.gate.totalOccupationTime < minLoc.gate.totalOccupationTime:
+            if l.totalOccupationTime() < minLoc.totalOccupationTime():
                 minLoc = l
         return minLoc

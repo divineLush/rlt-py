@@ -1,39 +1,81 @@
 import Models as Models
 import random
 
+arrivalTimeDiff = 2
+
 class State:
     def __init__(self):
         trailersNum = random.randint(10, 50)
         self.trailers = [Models.Trailer(random.randint(0, 24), i) for i in range(trailersNum)]
         self.warehouse = Models.Warehouse()
+        self.assignTrailers()
 
     def assignTrailers(self):
+        for loc in self.warehouse.locations:
+            loc.assignedTrailers = []
         for trailer in self.trailers:
             minLoc = self.warehouse.leastOccupiedLoc()
             self.assignTrailerToLoc(trailer, minLoc)
 
     def assignTrailerToLoc(self, trailer, loc):
-        trailer.assignedGateNum = loc.num
-        trailer.waitingTime = loc.gate.totalOccupationTime - trailer.arrivalTime
-        loc.gate.totalOccupationTime += trailer.serviceTime()
-        loc.gate.assignedTrailerNum = trailer.num
+        trailer.assignedLocNum = loc.num
+        trailer.setWaitingTimeByLoc(loc)
+        loc.assignedTrailers.append(trailer)
 
     def randSwap(self):
-        prevTime = self.totalWaitingTime()
-        t1 = self.trailers[random.randint(0, len(self.trailers) - 1)]
-        t2 = self.trailers[random.randint(0, len(self.trailers) - 1)]
-        loc1 = self.warehouse.locations[t1.assignedGateNum]
-        loc2 = self.warehouse.locations[t2.assignedGateNum]
-        self.assignTrailerToLoc(t1, loc2)
-        self.assignTrailerToLoc(t2, loc1)
-        if prevTime < self.totalWaitingTime():
-            self.assignTrailerToLoc(t1, loc1)
-            self.assignTrailerToLoc(t2, loc2)
+        randIndex = lambda: random.randint(0, len(self.trailers) - 1)
+        self.swapTrailers(self.makeTrailerTuple(randIndex(), randIndex()))
+
+    def swapTrailers(self, randTrailers):
+        '''
+            takes tuple of trailers and swaps if its reasonable
+            if target function gets worse it swaps
+        '''
+        curArrivalDiff = abs(randTrailers[0].arrivalTime - randTrailers[1].arrivalTime)
+        if curArrivalDiff < arrivalTimeDiff: # if swap is reasonable
+            if randTrailers[1].arrivalTime < randTrailers[0].arrivalTime:
+                # sort by arrival time
+                randTrailers[1], randTrailers[0] = randTrailers[0], randTrailers[1]
+            # swap trailers in locs
+            locs = [self.getLocByTrailer(randTrailers[i]) for i in range(2)]
+            isValid = lambda any: any != -1
+            isTupleValid = lambda tuple: isValid(tuple[0]) and isValid(tuple[1])
+            if (isTupleValid(locs)):
+                # find trailers and swap
+                prevTime = self.totalWaitingTime()
+                trIndexes = [self.getTrailerIndexByItsNum(tr) for tr in randTrailers]
+                if (isTupleValid(trIndexes)):
+                    self.swapTrailersByIndexes(trIndexes[0], trIndexes[1])
+                    if prevTime < self.totalWaitingTime(): # if it gets worse
+                        self.swapTrailersByIndexes(trIndexes[0], trIndexes[1])
+
+    def makeTrailerTuple(self, i, j):
+        return [self.trailers[i], self.trailers[j]]
+
+    def getLocByTrailer(self, trailer):
+        res = -1
+        for loc in self.warehouse.locations:
+            if loc.getTrailerIndexByItsNum(trailer.num) != -1:
+                res = loc
+        return res
+
+    def swapTrailersByIndexes(self, i, j):
+        self.trailers[i], self.trailers[j] = self.trailers[j], self.trailers[i]
+        self.assignTrailers()
+
+    def getTrailerIndexByItsNum(self, trailer):
+        res = -1
+        trailers = self.trailers
+        for i in range(len(trailers)):
+            if trailers[i].num == trailer.num:
+                res = i
+                break
+        return res
 
     def totalOccupationTime(self):
         res = 0
         for loc in self.warehouse.locations:
-            res += loc.gate.totalOccupationTime
+            res += loc.totalOccupationTime()
         return res
 
     def totalWaitingTime(self):
