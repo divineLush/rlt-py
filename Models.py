@@ -1,11 +1,12 @@
 import random
 
 class Trailer:
-    def __init__(self, arrivalTime):
+    def __init__(self, arrivalTime, num):
         self.palettes = [Palette() for i in range(random.randint(2, 15))]
         self.arrivalTime = arrivalTime
         self.assignedGateNum = 0
-        self.wasServiced = False
+        self.waitingTime = 0
+        self.num = num
 
     def totalWeight(self):
         res = 0
