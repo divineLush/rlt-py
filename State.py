@@ -1,7 +1,7 @@
 import Models as M
 import random
 
-arrivalTimeDiff = 2
+# arrivalTimeDiff = 2
 
 class State:
     def __init__(self, trailersNum = random.randint(10, 50)):
@@ -56,23 +56,23 @@ class State:
             takes tuple of trailers and swaps if its reasonable
             if target function gets worse it swaps
         '''
-        curArrivalDiff = abs(randTrailers[0].arrivalTime - randTrailers[1].arrivalTime)
-        if curArrivalDiff < arrivalTimeDiff: # if swap is reasonable
-            if randTrailers[1].arrivalTime < randTrailers[0].arrivalTime:
-                # sort by arrival time
-                randTrailers[1], randTrailers[0] = randTrailers[0], randTrailers[1]
-            # swap trailers in locs
-            locs = [self.getLocByTrailer(randTrailers[i]) for i in range(2)]
-            isValid = lambda any: any != -1
-            isTupleValid = lambda tuple: isValid(tuple[0]) and isValid(tuple[1])
-            if (isTupleValid(locs)):
-                # find trailers and swap
+        # curArrivalDiff = abs(randTrailers[0].arrivalTime - randTrailers[1].arrivalTime)
+        # if curArrivalDiff < arrivalTimeDiff: # if swap is reasonable
+        if randTrailers[1].arrivalTime < randTrailers[0].arrivalTime:
+            # sort by arrival time
+            randTrailers[1], randTrailers[0] = randTrailers[0], randTrailers[1]
+        # swap trailers in locs
+        locs = [self.getLocByTrailer(randTrailers[i]) for i in range(2)]
+        isValid = lambda any: any != -1
+        isTupleValid = lambda tuple: isValid(tuple[0]) and isValid(tuple[1])
+        if (isTupleValid(locs)):
+            # find trailers and swap
+            trIndexes = [self.getTrailerIndexByItsNum(tr) for tr in randTrailers]
+            if (isTupleValid(trIndexes)):
                 prevTime = self.totalWaitingTime()
-                trIndexes = [self.getTrailerIndexByItsNum(tr) for tr in randTrailers]
-                if (isTupleValid(trIndexes)):
+                self.swapTrailersByIndexes(trIndexes[0], trIndexes[1])
+                if prevTime < self.totalWaitingTime(): # if it gets worse
                     self.swapTrailersByIndexes(trIndexes[0], trIndexes[1])
-                    if prevTime < self.totalWaitingTime(): # if it gets worse
-                        self.swapTrailersByIndexes(trIndexes[0], trIndexes[1])
 
     def makeTrailerTuple(self, i, j):
         return [self.trailers[i], self.trailers[j]]
