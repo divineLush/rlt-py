@@ -1,28 +1,36 @@
-from functools import reduce
-import Models as Models
+import Models as M
 import random
 
 arrivalTimeDiff = 2
 
 class State:
-    def __init__(self):
-        trailersNum = random.randint(10, 50)
-        self.trailers = [Models.Trailer(random.randint(0, 24), i) for i in range(trailersNum)]
-        self.warehouse = Models.Warehouse()
+    def __init__(self, trailersNum = random.randint(10, 50)):
+        self.trailers = [M.Trailer(random.randint(0, 24), i) for i in range(trailersNum)]
+        self.warehouse = M.Warehouse()
         self.trailers.sort(key=lambda trailer: trailer.arrivalTime)
-        self.assignTrailers()
+        # self.assignTrailersRandomly() if isRandom else self.assignTrailers()
 
     def assignTrailers(self):
         for loc in self.warehouse.locations:
             loc.assignedTrailers = []
         for trailer in self.trailers:
-            minLoc = self.warehouse.leastOccupiedLoc()
-            self.assignTrailerToLoc(trailer, minLoc)
+            self.assignTrailerToLoc(trailer, self.warehouse.leastOccupiedLoc())
+
+    def assignTrailersRandomly(self):
+        for loc in self.warehouse.locations:
+            loc.assignedTrailers = []
+        for trailer in self.trailers:
+            self.assignTrailerToLoc(trailer, self.warehouse.randomLoc())
+
+    def assignTrailersToLocsByNums(self, locNums):
+        for i in range(len(self.trailers)):
+            loc = self.warehouse.locations[locNums[i]]
+            self.assignTrailerToLoc(self.trailers[i], loc)
 
     def assignTrailerToLoc(self, trailer, loc):
         trailer.assignedLocNum = loc.num
         trailer.setWaitingTimeByLoc(loc)
-        loc.assignedTrailers.append(trailer)
+        loc.assignTrailer(trailer)
 
     def mostWaitingTuple(self):
         waitingTimes = [trailer.waitingTime for trailer in self.trailers]
@@ -94,3 +102,13 @@ class State:
         for trailer in self.trailers:
             res += trailer.waitingTime
         return res
+
+    def localSearch(self, n = 10000):
+        prev = self.totalWaitingTime()
+        for i in range(n):
+            z = random.randint(0, 2)
+            if z == 1:
+                self.swapMostWaitingTrailer()
+            else :
+                self.randSwap()
+        print(prev, self.totalWaitingTime())

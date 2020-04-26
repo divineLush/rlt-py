@@ -33,6 +33,9 @@ class Location:
         self.assignedTrailers = []
         self.num = num
 
+    def assignTrailer(self, trailer):
+        self.assignedTrailers.append(trailer)
+
     def totalOccupationTime(self):
         res = 0
         for trailer in self.assignedTrailers:
@@ -51,6 +54,9 @@ class Location:
 class Warehouse:
     def __init__(self):
         self.locations = [Location(i) for i in range(6)]
+
+    def randomLoc(self):
+        return self.locations[random.randint(0, 5)]
 
     def leastOccupiedLoc(self):
         minLoc = self.locations[0]
